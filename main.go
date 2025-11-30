@@ -33,9 +33,24 @@ func main () {
 	cmds.Register("agg", cli.RSS)
 	cmds.Register("addfeed", cli.AddFeed)
 	cmds.Register("feeds", cli.Feeds)
+	cmds.Register("follow", cli.Follow)
+	cmds.Register("following", cli.Following)
 	config.HandleError(err)
 
 	args := os.Args
+
+	isCommand := false
+
+	for f := range cmds.Function {
+		if f == args[1] {
+			isCommand = true
+		}
+	}
+	if !isCommand {
+		fmt.Printf("%s is not a command\n", args[1])
+		os.Exit(1)
+	}
+
 	if len(args) < 2 {
 		fmt.Print("two arguments are required\n")
 		os.Exit(1)

@@ -33,8 +33,7 @@ func HandlerRegister(s *State, cmd Command) error {
 		return errors.New("register handler expects username as third argument")
 	}
 
-	var u *database.CreateUserParams
-	u = new(database.CreateUserParams)
+	u := new(database.CreateUserParams)
 
 	Context := context.Background()
 	
