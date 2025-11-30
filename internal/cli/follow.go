@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func Follow(s *State, cmd Command) error {
+func Follow(s *State, cmd Command, user database.User) error {
 	if len(cmd.Arguments) < 3 {
 		err := errors.New("follow commands require an url as third arguments")
 		config.HandleError(err)
@@ -19,7 +19,6 @@ func Follow(s *State, cmd Command) error {
 
 	ctxt := context.Background()
 
-	user := UserParam(s, ctxt)
 	feed := FeedParam(cmd.Arguments[2], s, ctxt)
 
 	f := new(database.CreateFeedFollowParams)
@@ -43,10 +42,9 @@ func Follow(s *State, cmd Command) error {
 	return nil
 }
 
-func Following(s *State, cmd Command) error {
+func Following(s *State, cmd Command, user database.User) error {
 	ctxt := context.Background()
 
-	user := UserParam(s, ctxt)
 	userID := user.ID
 
 	feeds,err := s.DB.GetFeedFollowsForUser(ctxt, userID)

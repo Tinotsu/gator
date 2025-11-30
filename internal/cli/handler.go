@@ -15,10 +15,11 @@ func HandlerLogin(s *State, cmd Command) error {
 	if len(cmd.Arguments) != 3 {
 		return errors.New("login handler expects username as third argument")
 	}
+
 	Context := context.Background()
 	n, err := s.DB.GetUser(Context, cmd.Arguments[2])
 	if err != nil {
-		fmt.Printf("user with that name need to be registred: %s", n)
+		fmt.Printf("user with that name need to be registred: %s", n.Name)
 		config.HandleError(err)
 		return err
 	}
@@ -44,7 +45,7 @@ func HandlerRegister(s *State, cmd Command) error {
 
 	n, err := s.DB.GetUser(Context, cmd.Arguments[2])
 	if err == nil {
-		fmt.Printf("\nuser with that name already exists: %s\n", n)
+		fmt.Printf("\nuser with that name already exists: %s\n", n.Name)
 		config.HandleError(err)
 		return err
 	}

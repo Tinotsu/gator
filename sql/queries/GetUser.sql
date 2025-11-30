@@ -1,3 +1,3 @@
 -- name: GetUser :one
-select name from users
+select * from users
 where name = $1;

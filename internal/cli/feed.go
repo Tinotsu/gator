@@ -48,7 +48,7 @@ func Feeds(s *State, cmd Command) error {
 	return nil
 }
 
-func AddFeed(s *State, cmd Command) error {
+func AddFeed(s *State, cmd Command, user database.User) error {
 	if len(cmd.Arguments) < 4 {
 		err := errors.New("addfeed command take two additional arguments, the name of the feed and the url of the feed")
 		config.HandleError(err)
@@ -58,7 +58,7 @@ func AddFeed(s *State, cmd Command) error {
 
 	ctxt := context.Background()
 
-	user := UserParam(s, ctxt)
+	u := UserParam(s, ctxt)
 
 	f := new(database.CreateFeedParams)
 
@@ -67,7 +67,7 @@ func AddFeed(s *State, cmd Command) error {
 	f.CreatedAt = time.Now()
 	f.UpdatedAt = time.Now()
 	f.Url  = cmd.Arguments[3]
-	f.UserID = user.ID
+	f.UserID = u.ID
 
 	newFeed,err := s.DB.CreateFeed(ctxt, *f)
 	if err != nil {
@@ -78,7 +78,7 @@ func AddFeed(s *State, cmd Command) error {
 	cmdFeed := new(Command)
 	cmdFeed.Arguments = append(cmdFeed.Arguments, cmd.Arguments[0],cmd.Arguments[1],cmd.Arguments[3])
 
-	err = Follow(s, *cmdFeed)
+	err = Follow(s, *cmdFeed, user)
 	if err != nil {
 		config.HandleError(err)
 		return err

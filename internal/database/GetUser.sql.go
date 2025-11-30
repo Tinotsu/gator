@@ -10,12 +10,18 @@ import (
 )
 
 const getUser = `-- name: GetUser :one
-select name from users
+select id, created_at, updated_at, name from users
 where name = $1
 `
 
-func (q *Queries) GetUser(ctx context.Context, name string) (string, error) {
+func (q *Queries) GetUser(ctx context.Context, name string) (User, error) {
 	row := q.db.QueryRowContext(ctx, getUser, name)
-	err := row.Scan(&name)
-	return name, err
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.Name,
+	)
+	return i, err
 }

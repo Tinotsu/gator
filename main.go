@@ -31,10 +31,11 @@ func main () {
 	cmds.Register("reset", cli.Reset)
 	cmds.Register("users", cli.Users)
 	cmds.Register("agg", cli.RSS)
-	cmds.Register("addfeed", cli.AddFeed)
+
+	cmds.Register("addfeed", cli.MiddlewareLoggedIn(cli.AddFeed))
 	cmds.Register("feeds", cli.Feeds)
-	cmds.Register("follow", cli.Follow)
-	cmds.Register("following", cli.Following)
+	cmds.Register("follow", cli.MiddlewareLoggedIn(cli.Follow))
+	cmds.Register("following", cli.MiddlewareLoggedIn(cli.Following))
 	config.HandleError(err)
 
 	args := os.Args
