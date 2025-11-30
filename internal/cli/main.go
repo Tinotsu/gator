@@ -64,6 +64,36 @@ func Users(s *State, cmd Command) error {
 	return nil
 }
 
+func Feeds(s *State, cmd Command) error {
+	ctxt := context.Background()
+
+	f, err := s.DB.GetFeeds(ctxt)
+	if err != nil {
+		config.HandleError(err)
+		return err
+	}
+
+	l, err := s.DB.GetUsers(ctxt)
+	if err != nil {
+		config.HandleError(err)
+		return err
+	}
+
+	for _, feed := range f {
+		var username string
+		for _, user := range l {
+			if feed.UserID == user.ID {
+				username = user.Name
+			} 
+		}
+		fmt.Print("\n- ", feed.Name)
+		fmt.Print("\n  url: ", feed.Url)
+		fmt.Print("\n  user: ", username)
+	}
+
+	return nil
+}
+
 func RSS(s *State, cmd Command) error {
 	ctxt := context.Background()
 	feed, err := rss.FetchFeed(ctxt, "https://www.wagslane.dev/index.xml")
@@ -118,7 +148,7 @@ func AddFeed(s *State, cmd Command) error {
 		config.HandleError(err)
 		return err
 	}
-	fmt.Print(feed)
+	fmt.Print(feed.Channel.Title)
 
 	return nil
 }

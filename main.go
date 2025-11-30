@@ -32,6 +32,7 @@ func main () {
 	cmds.Register("users", cli.Users)
 	cmds.Register("agg", cli.RSS)
 	cmds.Register("addfeed", cli.AddFeed)
+	cmds.Register("feeds", cli.Feeds)
 	config.HandleError(err)
 
 	args := os.Args
