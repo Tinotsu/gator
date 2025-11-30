@@ -3,7 +3,11 @@ package cli
 
 import(
 	"context"
+	"os"
+	"time"
+	"github.com/google/uuid"
 	"fmt"
+	"errors"
 	"github.com/Tinotsu/gator/internal/config"
 	"github.com/Tinotsu/gator/internal/rss"
 	"github.com/Tinotsu/gator/internal/database"
@@ -25,19 +29,27 @@ func NewState () *State {
 }
 
 func Reset(s *State, cmd Command) error {
-	ctxt := context.Background()
-	err := s.DB.DeleteUsers(ctxt)
-	if err != nil {
-		return err
-	}
-	fmt.Print("table user reset")
-	return nil
+    ctx := context.Background()
+
+    if err := s.DB.DeleteFeeds(ctx); err != nil {
+		config.HandleError(err)
+        return err
+    }
+
+    if err := s.DB.DeleteUsers(ctx); err != nil {
+		config.HandleError(err)
+        return err
+    }
+
+    fmt.Println("Database reset successfully!")
+    return nil
 }
 
 func Users(s *State, cmd Command) error {
 	ctxt := context.Background()
 	l, err := s.DB.GetUsers(ctxt)
 	if err != nil {
+		config.HandleError(err)
 		return err
 	}
 
@@ -54,6 +66,59 @@ func Users(s *State, cmd Command) error {
 
 func RSS(s *State, cmd Command) error {
 	ctxt := context.Background()
-	rss.FetchFeed(ctxt, "")
+	feed, err := rss.FetchFeed(ctxt, "https://www.wagslane.dev/index.xml")
+	if err != nil {
+		config.HandleError(err)
+		return err
+	}
+	fmt.Print(feed)
+	return nil
+}
+
+func AddFeed(s *State, cmd Command) error {
+	if len(cmd.Arguments) < 4 {
+		os.Exit(1)
+		return errors.New("addfeed command take two additional arguments, the name of the feed and the url of the feed")
+	}
+
+	ctxt := context.Background()
+
+	var userUUID uuid.UUID
+
+	l, err := s.DB.GetUsers(ctxt)
+	if err != nil {
+		config.HandleError(err)
+		return err
+	}
+
+	for _, user := range l {
+		if s.Config.Username == user.Name {
+			userUUID = user.ID
+		}
+	}
+	
+	var f *database.CreateFeedParams
+	f = new(database.CreateFeedParams)
+
+	f.ID = uuid.New()
+	f.Name = cmd.Arguments[2]
+	f.CreatedAt = time.Now()
+	f.UpdatedAt = time.Now()
+	f.Url  = cmd.Arguments[3]
+	f.UserID = userUUID
+
+	newFeed,err := s.DB.CreateFeed(ctxt, *f)
+	if err != nil {
+		config.HandleError(err)
+		return err
+	}
+
+	feed, err := rss.FetchFeed(ctxt, newFeed.Url)
+	if err != nil {
+		config.HandleError(err)
+		return err
+	}
+	fmt.Print(feed)
+
 	return nil
 }

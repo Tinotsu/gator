@@ -5,10 +5,10 @@ import(
 	"log"
 	"github.com/google/uuid"
 	"errors"
-	"os"
 	"fmt"
 	"time"
 	"github.com/Tinotsu/gator/internal/database"
+	"github.com/Tinotsu/gator/internal/config"
 )
 
 func HandlerLogin(s *State, cmd Command) error {
@@ -18,8 +18,8 @@ func HandlerLogin(s *State, cmd Command) error {
 	Context := context.Background()
 	n, err := s.DB.GetUser(Context, cmd.Arguments[2])
 	if err != nil {
-		fmt.Printf("user with that name need to be registred: %s\n", n)
-		os.Exit(1)
+		fmt.Printf("user with that name need to be registred: %s", n)
+		config.HandleError(err)
 		return err
 	}
 	s.Config.Username = cmd.Arguments[2]
@@ -45,15 +45,16 @@ func HandlerRegister(s *State, cmd Command) error {
 
 	n, err := s.DB.GetUser(Context, cmd.Arguments[2])
 	if err == nil {
-		fmt.Printf("user with that name already exists: %s\n", n)
-		os.Exit(1)
+		fmt.Printf("\nuser with that name already exists: %s\n", n)
+		config.HandleError(err)
 		return err
 	}
 	
-	s.DB.CreateUser(Context, *u)
+	_, err = s.DB.CreateUser(Context, *u)
+	config.HandleError(err)
 	s.Config.SetUSer(cmd.Arguments[2])
 
-	fmt.Printf("User %s registred !", cmd.Arguments[2])
+	fmt.Printf("\nUser %s registred !\n", cmd.Arguments[2])
 	log.Println(s.Config.Username)
 	return nil
 }

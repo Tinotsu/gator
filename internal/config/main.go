@@ -3,7 +3,6 @@ package config
 
 import (
 	"os"
-	"log"
 	"encoding/json"
 )
 
@@ -19,13 +18,13 @@ func NewConfig() *Config {
 
 func Read (cfg *Config) *Config {
 	fullPath, err := getConfigFilePath()
-	if err != nil {log.Fatal(err)}
+	HandleError(err)
 
 	data, err :=  os.ReadFile(fullPath)
-	if err != nil {log.Fatal(err)}
+	HandleError(err)
 
 	err = json.Unmarshal(data, cfg)
-	if err != nil {log.Fatal(err)}
+	HandleError(err)
 	return cfg
 } 
 
@@ -33,7 +32,5 @@ func (cfg *Config) SetUSer (username string) {
 	cfg.Username = username
 
 	err := write(*cfg)
-	if err != nil {
-		log.Fatal(err)
-	}
+	HandleError(err)
 }

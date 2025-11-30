@@ -1,6 +1,7 @@
 package cli
 
 import(
+	"github.com/Tinotsu/gator/internal/config"
 )
 
 type Commands struct {
@@ -17,6 +18,7 @@ func NewCommands () *Commands {
 func (c *Commands) Run(s *State, cmd Command) error {
 	err := c.Function[cmd.Name](s, cmd)
 	if err != nil {
+		config.HandleError(err)
 		return err
 	}
 	return nil

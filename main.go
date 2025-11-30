@@ -10,6 +10,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+
 func main () {
 	cfg := config.NewConfig()
 	cfg = config.Read(cfg)
@@ -18,7 +19,8 @@ func main () {
 	s.Config = cfg
 
 	db, err := sql.Open("postgres", s.Config.DBURL)
-	if err != nil {fmt.Println(err)}
+	config.HandleError(err)
+
 	dbQueries := database.New(db)
 
 	s.DB = dbQueries
@@ -29,6 +31,8 @@ func main () {
 	cmds.Register("reset", cli.Reset)
 	cmds.Register("users", cli.Users)
 	cmds.Register("agg", cli.RSS)
+	cmds.Register("addfeed", cli.AddFeed)
+	config.HandleError(err)
 
 	args := os.Args
 	if len(args) < 2 {
@@ -44,5 +48,5 @@ func main () {
 		Arguments : args,
 	}
 	err = cmds.Run(s, cmd)
-	if err != nil {fmt.Println(err)}
+	config.HandleError(err)
 }
