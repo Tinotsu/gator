@@ -44,7 +44,7 @@ func Follow(s *State, cmd Command, user database.User) error {
 
 func Following(s *State, cmd Command, user database.User) error {
 	ctxt := context.Background()
-
+	
 	userID := user.ID
 
 	feeds,err := s.DB.GetFeedFollowsForUser(ctxt, userID)
@@ -58,5 +58,22 @@ func Following(s *State, cmd Command, user database.User) error {
 		fmt.Print("\n  - ", feeds[i].FeedName)
 	}
 	
+	return nil
+}
+
+func Unfollow(s* State, cmd Command, user database.User) error {
+	ctxt := context.Background()
+	
+	feed := FeedParam(cmd.Arguments[2], s, ctxt)
+
+	param := new(database.DeleteFollowsForUserParams)
+	param.FeedID = feed.ID
+	param.UserID = user.ID
+
+	err := s.DB.DeleteFollowsForUser(ctxt, *param)
+	if err != nil {
+		config.HandleError(err)
+		return err
+	}
 	return nil
 }

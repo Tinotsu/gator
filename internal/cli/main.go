@@ -3,9 +3,9 @@ package cli
 
 import(
 	"context"
+	"time"
 	"fmt"
 	"github.com/Tinotsu/gator/internal/config"
-	"github.com/Tinotsu/gator/internal/rss"
 	"github.com/Tinotsu/gator/internal/database"
 )
 
@@ -61,12 +61,22 @@ func Users(s *State, cmd Command) error {
 }
 
 func RSS(s *State, cmd Command) error {
-	ctxt := context.Background()
-	feed, err := rss.FetchFeed(ctxt, "https://www.wagslane.dev/index.xml")
+	timeBetweenReqs := cmd.Arguments[2]
+
+	duration, err := time.ParseDuration(timeBetweenReqs)
 	if err != nil {
 		config.HandleError(err)
 		return err
 	}
-	fmt.Print(feed)
-	return nil
+
+	fmt.Printf("collection feeds every %s\n", timeBetweenReqs)
+
+	ticker := time.NewTicker(duration)
+	for ; ; <-ticker.C {
+		err = ScrapeFeeds(s)
+		if err != nil {
+			config.HandleError(err)
+			return err
+		}
+	}
 }
