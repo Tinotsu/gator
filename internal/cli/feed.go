@@ -2,6 +2,7 @@ package cli
 
 import(
 	"context"
+	"strconv"
 	"os"
 	"time"
 	"github.com/google/uuid"
@@ -90,6 +91,42 @@ func AddFeed(s *State, cmd Command, user database.User) error {
 		return err
 	}
 	fmt.Print(feed.Channel.Title)
+
+	return nil
+}
+
+func Browse(s *State, cmd Command, user database.User) error {
+	ctx := context.Background()
+	postParam := new(database.GetPostsForUserParams)
+
+	u := UserParam(s, ctx)
+
+	var limit int32
+
+	if len(cmd.Arguments) < 3 || cmd.Arguments[2] == "" {
+		limit = 2
+	} else {
+		limit64, err := strconv.ParseInt(cmd.Arguments[2], 10, 32)
+		if err != nil {
+			config.HandleError(err)
+			return err
+		}
+		limit = int32(limit64)
+	}
+
+	postParam.ID = u.ID
+	postParam.Limit = limit
+
+	posts, err := s.DB.GetPostsForUser(ctx, *postParam)
+	if err != nil {
+		config.HandleError(err)
+		return err
+	}
+
+	for i, post := range posts {
+		fmt.Print("\n",i,"  ")
+		fmt.Print(post.Title)
+	}
 
 	return nil
 }
